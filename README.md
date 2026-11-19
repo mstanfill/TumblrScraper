@@ -109,6 +109,35 @@ inspect(rows)   # prints summary stats
 
 ---
 
+## Scraping a list of URLs
+
+`tumblr_url_scraper.py` / `tumblr_url_scraper.ipynb` collect **specific posts** from a list of Tumblr post URLs instead of a tag. They use the same API key. All HTML is removed from text fields: tags are stripped, entities are decoded, and whitespace is collapsed.
+
+```bash
+# URLs from a text file (one per line; blank lines and # comments ignored)
+python tumblr_url_scraper.py --input urls.txt --out posts.csv
+
+# URLs from a column of a CSV file (default column: "url")
+python tumblr_url_scraper.py --input my_list.csv --url-column post_url
+
+# URLs directly on the command line
+python tumblr_url_scraper.py https://www.tumblr.com/staff/123456789 https://example.tumblr.com/post/987654321/slug
+```
+
+Supported URL formats: `tumblr.com/{blog}/{id}`, `tumblr.com/blog/view/{blog}/{id}`, `{blog}.tumblr.com/post/{id}`, custom domains (`example.com/post/{id}`), and `tmblr.co` short links.
+
+The output has the same columns as the tag scraper, plus three at the front:
+
+| Column | Description |
+|---|---|
+| `input_url` | The URL as given in your list |
+| `status` | `ok`, `error` (API/network failure, deleted or private post), or `invalid_url` |
+| `error` | Reason for failure, empty when `status` is `ok` |
+
+Every input URL produces exactly one row. Duplicate URLs are dropped. Ask posts are written to `body_or_caption` as `Q (asker): … A: …`.
+
+---
+
 ## Notes
 
 - The `/tagged` endpoint paginates **backwards** through time using timestamps. Date-bounded runs stop automatically when the lower bound is reached, so `--since` / `--until` is substantially faster than collecting everything and filtering.
